@@ -28,6 +28,7 @@ else
 fi
 
 # Force UNIX paths (equiv to linking with -lunix) for clib2
+git restore Modules/main.c
 sed -i '255ienableUnixPaths(); /*RJD: Force Unix Paths using CLIB2 afxgroup method*/' Modules/main.c
 
 # Specific undefs for AmigaOS
