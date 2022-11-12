@@ -1,0 +1,65 @@
+#!/bin/bash --
+
+./configure \
+    --host=ppc-amigaos \
+    --with-threads=no \
+    --enable-shared=no \
+    --prefix=$(pwd)/installAmiga \
+    --with-system-ffi=no \
+    CFLAGS="-mcrt=clib2" \
+    CPPFLAGS="-mcrt=clib2 -DPY_FORMAT_LONG_LONG=\"\\\"ll\\\"\"" \
+    CXXFLAGS="-mcrt=clib2" \
+    LDFLAGS="-mcrt=clib2" \
+    CC="ppc-amigaos-gcc -DPY_FORMAT_LONG_LONG=\"\\\"ll\\\"\"" #->
+# Included CC because for some reason setup.py does not see to bring
+# over the CPPFLAGS! No harm in this anyway, but not nice!
+
+test -f rjd_static_Setup || { echo 1>&2 "Expected a file named \"rjd_static_Setup\"" ; exit 1 ; }
+cp rjd_static_Setup Modules/
+
+# We cannot execute the interpreter that we just built because it is
+# only executable on the host machine. Instead, let's just use the
+# build machine's version of python
+if [[ "2" == $(python --version 2>&1 | sed "s|Python ||g" | cut -d. -f1) ]]
+then
+    sed -i 's|./$(BUILDPYTHON)|python|g' Makefile
+else
+    echo 1>&2 "Build machine needs python v2"
+fi
+
+# Specific undefs for AmigaOS
+git restore Modules/posixmodule.c
+sed -i '161i#undef HAVE_FORK' Modules/posixmodule.c
+sed -i '161i#undef HAVE_FORK1' Modules/posixmodule.c
+sed -i '161i#undef HAVE_WAIT' Modules/posixmodule.c
+sed -i '161i#undef HAVE_EXECV' Modules/posixmodule.c
+sed -i '161i#undef HAVE_PIPE' Modules/posixmodule.c
+sed -i '161i#undef HAVE_TTYNAME' Modules/posixmodule.c
+sed -i '161i#undef HAVE_DEV_PTMX' Modules/posixmodule.c
+sed -i '161i#undef HAVE___GETPTY' Modules/posixmodule.c
+sed -i '161i#undef HAVE_OPENPTY' Modules/posixmodule.c
+
+# Do not create PYC files (effectively have the -B option enabled always)
+sed -i 's|write_compiled_module(co, cpathname, &st);|;|g' Python/import.c
+
+# Running this does nothing. I tried it on the X5000, and I tried it
+# even when compiling this for the build Linux machine. It only causes
+# the build machine to error because it tries to run pgen which is
+# built for PPC anyway!
+sed -i 's|$(PGEN) $(GRAMMAR_INPUT) $(GRAMMAR_H) $(GRAMMAR_C)||g' Makefile
+
+# Then, for some unknown reason, we need to ensure that setup.py
+# prepends "./Modules/" to every module - wtf!
+sed -i 's|return module|return "./Modules/" + module # rjd|g' setup.py
+
+# Do not try to dynamically load the modules - they are not going to work since the SO are built for PPC AmigaOS
+sed -i 's|imp.load_dynamic(ext.name, ext_filename)|pass|g' setup.py
+
+# cscope
+find \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) > cscope.files
+cscope -b -q -i cscope.files
+etags - < cscope.files
+rm cscope.files
+
+make -j$(nproc) -i 2>&1 | tee RJD_make.log
+make install -i 2>&1 | tee RJD_make_install.log
