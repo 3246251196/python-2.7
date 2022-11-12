@@ -15,7 +15,7 @@
 # over the CPPFLAGS! No harm in this anyway, but not nice!
 
 test -f rjd_static_Setup || { echo 1>&2 "Expected a file named \"rjd_static_Setup\"" ; exit 1 ; }
-cp rjd_static_Setup Modules/
+cp rjd_static_Setup Modules/Setup
 
 # We cannot execute the interpreter that we just built because it is
 # only executable on the host machine. Instead, let's just use the
@@ -26,6 +26,9 @@ then
 else
     echo 1>&2 "Build machine needs python v2"
 fi
+
+# Force UNIX paths (equiv to linking with -lunix) for clib2
+sed -i '255ienableUnixPaths(); /*RJD: Force Unix Paths using CLIB2 afxgroup method*/' Modules/main.c
 
 # Specific undefs for AmigaOS
 git restore Modules/posixmodule.c
