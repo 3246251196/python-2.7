@@ -1,5 +1,20 @@
 #!/bin/bash --
 
+if (( $# > 0 ))
+then
+    if [[ "${1}" == "cscope" ]]
+    then
+	find \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) > cscope.files
+	cscope -b -q -i cscope.files
+	etags - < cscope.files
+	rm cscope.files
+	exit 0
+    else
+	echo 1>&2 "Do not understand argument. Only \"cscope\" is understood"
+	exit 1
+    fi
+fi
+
 ./configure \
     --host=ppc-amigaos \
     --with-threads=no \
@@ -59,15 +74,11 @@ sed -i 's|return module|return "./Modules/" + module # rjd|g' setup.py
 # Do not try to dynamically load the modules - they are not going to work since the SO are built for PPC AmigaOS
 sed -i 's|imp.load_dynamic(ext.name, ext_filename)|pass|g' setup.py
 
-# cscope
-find \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) > cscope.files
-cscope -b -q -i cscope.files
-etags - < cscope.files
-rm cscope.files
 
 make -j$(nproc) -i 2>&1 | tee RJD_make.log
 make install -i 2>&1 | tee RJD_make_install.log
 
+rm -rf python-2.7.lha
 mv installAmiga python-2.7
 lha a python-2.7.lha python-2.7
 mv python-2.7 installAmiga
