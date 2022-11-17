@@ -69,6 +69,6 @@ make -j$(nproc) -i 2>&1 | tee RJD_make.log
 make install -i 2>&1 | tee RJD_make_install.log
 
 mv installAmiga python-2.7
-lha a python-2.7.lha installAmiga/
+lha a python-2.7.lha python-2.7
 mv python-2.7 installAmiga
 
