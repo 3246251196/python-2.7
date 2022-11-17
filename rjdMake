@@ -67,3 +67,8 @@ rm cscope.files
 
 make -j$(nproc) -i 2>&1 | tee RJD_make.log
 make install -i 2>&1 | tee RJD_make_install.log
+
+mv installAmiga python-2.7
+lha a python-2.7.lha installAmiga/
+mv python-2.7 installAmiga
+
