@@ -61,6 +61,16 @@ sed -i '161i#undef HAVE_OPENPTY' Modules/posixmodule.c
 # Do not create PYC files (effectively have the -B option enabled always)
 sed -i 's|write_compiled_module(co, cpathname, &st);|;|g' Python/import.c
 
+# W..T..F - Why do we need to call getenv AGAIN for the real value of
+# PYTHONPATH to be understood. These are auto-storage variables. The
+# getenv function should be called on each invocation, right... So,
+# why twice!?
+git restore Modules/getpath.c
+sed -i '399i#endif' Modules/getpath.c
+sed -i '399ihome=getenv("PYTHONHOME");' Modules/getpath.c
+sed -i '399irtpypath=getenv("PYTHONPATH");' Modules/getpath.c
+sed -i '399i#if __amigaos4__' Modules/getpath.c
+
 # Running this does nothing. I tried it on the X5000, and I tried it
 # even when compiling this for the build Linux machine. It only causes
 # the build machine to error because it tries to run pgen which is
