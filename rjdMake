@@ -90,6 +90,7 @@ make install -i 2>&1 | tee RJD_make_install.log
 
 rm -rf python-2.7.lha
 mv installAmiga python-2.7
+cd python-2.7/bin/ ; ppc-amigaos-strip python2.7 ; cd -
 lha a python-2.7.lha python-2.7
 mv python-2.7 installAmiga
 
