@@ -18,12 +18,19 @@ fi
 # We cannot execute the interpreter that we just built because it is
 # only executable on the host machine. Instead, let's just use the
 # build machine's version of python
+PY=
 if [[ "2" == $(python --version 2>&1 | sed "s|Python ||g" | cut -d. -f1) ]]
 then
-    sed -i 's|./$(BUILDPYTHON)|python|g' Makefile
+    PY=python
 else
-    echo 1>&2 "Build machine needs python v2"
-    exit 1
+    # assume that python2 is always python version2!
+    if $(which python2 1>/dev/null 2>&1)
+    then
+	PY=python2
+    else
+	echo 1>&2 "Build machine needs python v2"
+	exit 1
+    fi
 fi
 
 ./configure \
@@ -39,6 +46,8 @@ fi
     CC="ppc-amigaos-gcc -DPY_FORMAT_LONG_LONG=\"\\\"ll\\\"\"" || { echo 1>&2 "Failed to configure" ; exit 1 ; } #->
 # Included CC because for some reason setup.py does not see to bring
 # over the CPPFLAGS! No harm in this anyway, but not nice!
+
+sed -i "s|./\$(BUILDPYTHON)|${PY}|g" Makefile
 
 test -f rjd_static_Setup || { echo 1>&2 "Expected a file named \"rjd_static_Setup\"" ; exit 1 ; }
 cp rjd_static_Setup Modules/Setup
