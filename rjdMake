@@ -15,6 +15,17 @@ then
     fi
 fi
 
+# We cannot execute the interpreter that we just built because it is
+# only executable on the host machine. Instead, let's just use the
+# build machine's version of python
+if [[ "2" == $(python --version 2>&1 | sed "s|Python ||g" | cut -d. -f1) ]]
+then
+    sed -i 's|./$(BUILDPYTHON)|python|g' Makefile
+else
+    echo 1>&2 "Build machine needs python v2"
+    exit 1
+fi
+
 ./configure \
     --host=ppc-amigaos \
     --with-threads=no \
@@ -31,17 +42,6 @@ fi
 
 test -f rjd_static_Setup || { echo 1>&2 "Expected a file named \"rjd_static_Setup\"" ; exit 1 ; }
 cp rjd_static_Setup Modules/Setup
-
-# We cannot execute the interpreter that we just built because it is
-# only executable on the host machine. Instead, let's just use the
-# build machine's version of python
-if [[ "2" == $(python --version 2>&1 | sed "s|Python ||g" | cut -d. -f1) ]]
-then
-    sed -i 's|./$(BUILDPYTHON)|python|g' Makefile
-else
-    echo 1>&2 "Build machine needs python v2"
-    exit 1
-fi
 
 # Force UNIX paths (equiv to linking with -lunix) for clib2
 git restore Modules/main.c
