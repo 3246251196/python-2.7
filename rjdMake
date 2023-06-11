@@ -101,7 +101,7 @@ sed -i 's|return module|return "./Modules/" + module # rjd|g' setup.py
 sed -i 's|imp.load_dynamic(ext.name, ext_filename)|pass|g' setup.py
 
 
-make -j$(nproc) 2>&1 | tee RJD_make.log
+make -O -j$(nproc) 2>&1 | tee RJD_make.log
 make install 2>&1 | tee RJD_make_install.log
 
 rm -rf python-2.7.lha
