@@ -21,12 +21,12 @@ fi
 PY=
 if [[ "2" == $(python --version 2>&1 | sed "s|Python ||g" | cut -d. -f1) ]]
 then
-    PY=python
+    PY="$(which python)"
 else
     # assume that python2 is always python version2!
     if $(which python2 1>/dev/null 2>&1)
     then
-	PY=python2
+	PY="$(which python2)"
     else
 	echo 1>&2 "Build machine needs python v2"
 	exit 1
@@ -47,7 +47,13 @@ fi
 # Included CC because for some reason setup.py does not see to bring
 # over the CPPFLAGS! No harm in this anyway, but not nice!
 
-sed -i "s|./\$(BUILDPYTHON)|${PY}|g" Makefile
+mkdir -p PY_USE
+pushd PY_USE
+ln -s "${PY}" python 1>/dev/null 2>&1
+export PATH="$(pwd)":"${PATH}"
+popd
+
+sed -i "s|./\$(BUILDPYTHON)|python|g" Makefile
 
 test -f rjd_static_Setup || { echo 1>&2 "Expected a file named \"rjd_static_Setup\"" ; exit 1 ; }
 cp rjd_static_Setup Modules/Setup
