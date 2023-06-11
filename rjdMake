@@ -25,7 +25,7 @@ fi
     CPPFLAGS="-mcrt=clib2 -DPY_FORMAT_LONG_LONG=\"\\\"ll\\\"\"" \
     CXXFLAGS="-mcrt=clib2" \
     LDFLAGS="-mcrt=clib2" \
-    CC="ppc-amigaos-gcc -DPY_FORMAT_LONG_LONG=\"\\\"ll\\\"\"" #->
+    CC="ppc-amigaos-gcc -DPY_FORMAT_LONG_LONG=\"\\\"ll\\\"\"" || { echo 1>&2 "Failed to configure" ; exit 1 ; } #->
 # Included CC because for some reason setup.py does not see to bring
 # over the CPPFLAGS! No harm in this anyway, but not nice!
 
@@ -90,7 +90,7 @@ make install -i 2>&1 | tee RJD_make_install.log
 
 rm -rf python-2.7.lha
 mv installAmiga python-2.7
-cd python-2.7/bin/ ; ppc-amigaos-strip python2.7 ; cd -
+pushd python-2.7/bin/ ; ppc-amigaos-strip python2.7 ; popd
 lha a python-2.7.lha python-2.7
 mv python-2.7 installAmiga
 
