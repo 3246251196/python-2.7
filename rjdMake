@@ -1,4 +1,5 @@
 #!/bin/bash --
+set -o pipefail
 
 if (( $# > 0 ))
 then
@@ -100,9 +101,8 @@ sed -i 's|return module|return "./Modules/" + module # rjd|g' setup.py
 # Do not try to dynamically load the modules - they are not going to work since the SO are built for PPC AmigaOS
 sed -i 's|imp.load_dynamic(ext.name, ext_filename)|pass|g' setup.py
 
-
-make -O -j$(nproc) 2>&1 | tee RJD_make.log
-make install 2>&1 | tee RJD_make_install.log
+make -O -j$(nproc) 2>&1 | tee RJD_make.log || { echo 2>&1 "Error during make" ; exit 1 ; }
+make install 2>&1 | tee RJD_make_install.log || { echo 2>&1 "Error during make install" ; exit 1 ; }
 
 rm -rf python-2.7.lha
 mv installAmiga python-2.7
