@@ -40,6 +40,7 @@ then
     sed -i 's|./$(BUILDPYTHON)|python|g' Makefile
 else
     echo 1>&2 "Build machine needs python v2"
+    exit 1
 fi
 
 # Force UNIX paths (equiv to linking with -lunix) for clib2
@@ -85,8 +86,8 @@ sed -i 's|return module|return "./Modules/" + module # rjd|g' setup.py
 sed -i 's|imp.load_dynamic(ext.name, ext_filename)|pass|g' setup.py
 
 
-make -j$(nproc) -i 2>&1 | tee RJD_make.log
-make install -i 2>&1 | tee RJD_make_install.log
+make -j$(nproc) 2>&1 | tee RJD_make.log
+make install 2>&1 | tee RJD_make_install.log
 
 rm -rf python-2.7.lha
 mv installAmiga python-2.7
